@@ -1,8 +1,10 @@
 import useInput from '@hooks/useInput';
 import React, { useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 import { Header, Form, Label, Input, Button, LinkContainer, Error, Success } from './styles';
 import axios from 'axios';
+import fetcher from '@utils/fetcher';
+import useSWR from 'swr';
 
 const SignUp = () => {
   const [email, onChangeEmail] = useInput('');
@@ -12,45 +14,65 @@ const SignUp = () => {
   const [mismatchError, setMismatchError] = useState(false);
   const [signUpError, setSignUpError] = useState('');
   const [signUpSuccess, setSignUpSuccess] = useState(false);
-  
-  const onChangePassword = useCallback((e) => {
-    setPassword(e.target.value);
-    setMismatchError(e.target.value !== passwordCheck);
-  }, [passwordCheck]);
 
-  const onChangePasswordCheck = useCallback((e) => {
-    setPasswordCheck(e.target.value);
-    setMismatchError(e.target.value !== password);
-  }, [password]);
+  const { data, error, revalidate } = useSWR('http://localhost:3095/api/users', fetcher);
 
-  const onSubmit = useCallback((e) => {
-    e.preventDefault();
-    console.log(email, nickname, password, passwordCheck, mismatchError);
-    
-    if(!mismatchError && nickname) {
-      console.log('서버로 회원가입하기');
+  const onChangePassword = useCallback(
+    (e) => {
+      setPassword(e.target.value);
+      setMismatchError(e.target.value !== passwordCheck);
+    },
+    [passwordCheck],
+  );
 
-      // 비동기 요청을 보내기 전에 이전 데이터가 남아있을 수 있으므로 사전에 초기화해주는 것이 좋다.
-      setSignUpError('');
-      setSignUpSuccess(false);
+  const onChangePasswordCheck = useCallback(
+    (e) => {
+      setPasswordCheck(e.target.value);
+      setMismatchError(e.target.value !== password);
+    },
+    [password],
+  );
 
-      axios.post('http://localhost:3095/api/users', { // <- localhost:3095가 3095에게 보냄. 'http://localhost:3095/api/users' 는 localhost:3090이 3095에게 보내는 것.
-        email,
-        nickname,
-        password
-      })
-      .then((response) => {
-        console.log(response);
-        setSignUpSuccess(true);
-      })
-      .catch((error) => {
-        console.log(error.response);
-        setSignUpError(error.response.data);
-      })
-      .finally(() => {});
+  const onSubmit = useCallback(
+    (e) => {
+      e.preventDefault();
+      console.log(email, nickname, password, passwordCheck, mismatchError);
 
-    }
-  }, [email, nickname, password, passwordCheck, mismatchError]);
+      if (!mismatchError && nickname) {
+        console.log('서버로 회원가입하기');
+
+        // 비동기 요청을 보내기 전에 이전 데이터가 남아있을 수 있으므로 사전에 초기화해주는 것이 좋다.
+        setSignUpError('');
+        setSignUpSuccess(false);
+
+        axios
+          .post('http://localhost:3095/api/users', {
+            // <- localhost:3095가 3095에게 보냄. 'http://localhost:3095/api/users' 는 localhost:3090이 3095에게 보내는 것.
+            email,
+            nickname,
+            password,
+          })
+          .then((response) => {
+            console.log(response);
+            setSignUpSuccess(true);
+          })
+          .catch((error) => {
+            console.log(error.response);
+            setSignUpError(error.response.data);
+          })
+          .finally(() => {});
+      }
+    },
+    [email, nickname, password, passwordCheck, mismatchError],
+  );
+
+  if (data === undefined) {
+    return <div>로딩중...</div>;
+  }
+
+  if (data) {
+    return <Redirect to="/workspace/channel" />;
+  }
 
   return (
     <div id="container">
