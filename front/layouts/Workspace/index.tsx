@@ -3,6 +3,18 @@ import useSWR from 'swr';
 import fetcher from '@utils/fetcher';
 import axios from 'axios';
 import { Redirect } from 'react-router-dom';
+import {
+  Header,
+  RightMenu,
+  ProfileImg,
+  WorkspaceWrapper,
+  Workspaces,
+  Channels,
+  Chats,
+  WorkspaceName,
+  MenuScroll,
+} from '@layouts/Workspace/style';
+import gravatar from 'gravatar';
 
 // Channel/index.tsx에서 Workspace 컴포넌트에 감싸진 div 태그가 children이 된다.
 const Workspace: FC = ({ children }) => {
@@ -23,7 +35,26 @@ const Workspace: FC = ({ children }) => {
 
   return (
     <div>
+      <Header>
+        test
+        <RightMenu>
+          <span>
+            <ProfileImg src={gravatar.url(data.nickname, { s: '28px', d: 'retro' })} alt={data.nickname}></ProfileImg>
+          </span>
+        </RightMenu>
+      </Header>
+
       <button onClick={onLogout}>로그아웃</button>
+
+      <WorkspaceWrapper>
+        <Workspaces>Workspaces</Workspaces>
+        <Channels>
+          <WorkspaceName>Sleact</WorkspaceName>
+          <MenuScroll>menu scroll</MenuScroll>
+        </Channels>
+        <Chats>Chats</Chats>
+      </WorkspaceWrapper>
+
       {children}
     </div>
   );
