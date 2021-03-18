@@ -1,11 +1,20 @@
-import React, { FC } from 'react';
+import React, { CSSProperties, FC } from 'react';
 import { CreateMenu, CloseModalButton } from '@components/Menu/styles';
 
-const Menu: FC = ({ children }) => {
+interface Props {
+  style: CSSProperties;
+  show: boolean;
+  onCloseModal: () => void;
+  closeButton?: boolean;
+}
+
+const Menu: FC<Props> = ({ children, style, show, onCloseModal, closeButton }) => {
   return (
-    <CreateMenu>
-      <div>메뉴</div>
-      {children}
+    <CreateMenu onClick={onCloseModal}>
+      <div style={style}>
+        {closeButton && <CloseModalButton onClick={onCloseModal}>&times;</CloseModalButton>}
+        {children}
+      </div>
     </CreateMenu>
   );
 };
