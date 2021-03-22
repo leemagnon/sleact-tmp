@@ -7,7 +7,6 @@ interface Props {
 }
 
 const Modal: FC<Props> = ({ show, children, onCloseModal }) => {
-  console.log(children);
   const stopPropagation = useCallback((e) => {
     e.stopPropagation();
   }, []);
