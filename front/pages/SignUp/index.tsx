@@ -15,7 +15,7 @@ const SignUp = () => {
   const [signUpError, setSignUpError] = useState('');
   const [signUpSuccess, setSignUpSuccess] = useState(false);
 
-  const { data, error, revalidate } = useSWR('http://localhost:3095/api/users', fetcher);
+  const { data, error, revalidate } = useSWR('/api/users', fetcher);
 
   const onChangePassword = useCallback(
     (e) => {
@@ -46,7 +46,7 @@ const SignUp = () => {
         setSignUpSuccess(false);
 
         axios
-          .post('http://localhost:3095/api/users', {
+          .post('/api/users', {
             // <- localhost:3095가 3095에게 보냄. 'http://localhost:3095/api/users' 는 localhost:3090이 3095에게 보내는 것.
             email,
             nickname,

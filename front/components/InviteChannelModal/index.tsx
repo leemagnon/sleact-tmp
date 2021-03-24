@@ -1,7 +1,7 @@
 import Modal from '@components/Modal';
 import useInput from '@hooks/useInput';
 import { Button, Input, Label } from '@pages/SignUp/styles';
-import { IChannel, IUser } from '@typings/db';
+import { IUser } from '@typings/db';
 import fetcher from '@utils/fetcher';
 import axios from 'axios';
 import React, { FC, useCallback } from 'react';
@@ -12,37 +12,37 @@ import useSWR from 'swr';
 interface Props {
   show: boolean;
   onCloseModal: () => void;
-  setShowCreateChannelModal: (flag: boolean) => void;
+  setShowInviteChannelModal: (flag: boolean) => void;
 }
 
-const CreateChannelModal: FC<Props> = ({ show, onCloseModal, setShowCreateChannelModal }) => {
-  const [newChannel, onChangeNewChannel, setNewChannel] = useInput('');
+const InviteChannelModal: FC<Props> = ({ show, onCloseModal, setShowInviteChannelModal }) => {
+  const [newMember, onChangeNewMember, setNewMember] = useInput('');
   const { workspace, channel } = useParams<{ workspace: string; channel: string }>();
 
-  const { data: userData } = useSWR<IUser | false>('/api/users', fetcher); // 로그인 후 서버로부터 로그인 사용자 정보를 가져옴. data가 존재하지 않으면 로딩중.
+  const { data: userData } = useSWR<IUser>('/api/users', fetcher); // 로그인 후 서버로부터 로그인 사용자 정보를 가져옴. data가 존재하지 않으면 로딩중.
 
-  const { revalidate: revalidateChannel } = useSWR<IChannel[]>(
-    userData ? `/api/workspaces/${workspace}/channels` : null,
+  const { revalidate: revalidateMembers } = useSWR<IUser[]>(
+    userData ? `/api/workspaces/${workspace}/members` : null,
     fetcher,
-  ); // 로그인한 상태이면 해당 워크스페이스의 채널들을 모두 가져오고 아니면 안 가져온다(null)
+  ); // 로그인한 상태이면 해당 워크스페이스의 멤버들을 모두 가져오고 아니면 안 가져온다(null)
 
-  const onCreateChannel = useCallback(
+  const onInviteMember = useCallback(
     (e) => {
       e.preventDefault();
       axios
         .post(
-          `/api/workspaces/${workspace}/channels`,
+          `/api/workspaces/${workspace}/channels/${channel}/members`,
           {
-            name: newChannel,
+            email: newMember,
           },
           {
             withCredentials: true,
           },
         )
         .then(() => {
-          revalidateChannel(); // 생성하자마자 채널 리스트 다시 불러오기
-          setShowCreateChannelModal(false);
-          setNewChannel('');
+          revalidateMembers();
+          setShowInviteChannelModal(false);
+          setNewMember('');
         })
         .catch((error) => {
           console.dir(error);
@@ -55,20 +55,20 @@ const CreateChannelModal: FC<Props> = ({ show, onCloseModal, setShowCreateChanne
           //   }
         });
     },
-    [newChannel],
+    [newMember],
   );
 
   return (
     <Modal show={show} onCloseModal={onCloseModal}>
-      <form onSubmit={onCreateChannel}>
-        <Label id="channel-label">
-          <span>채널</span>
-          <Input id="channel" value={newChannel} onChange={onChangeNewChannel} />
+      <form onSubmit={onInviteMember}>
+        <Label id="member-label">
+          <span>채널 멤버 초대</span>
+          <Input id="member" type="email" value={newMember} onChange={onChangeNewMember} />
         </Label>
-        <Button type="submit">생성하기</Button>
+        <Button type="submit">초대하기</Button>
       </form>
     </Modal>
   );
 };
 
-export default CreateChannelModal;
+export default InviteChannelModal;

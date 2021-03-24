@@ -7,7 +7,7 @@ import axios from 'axios';
 import useSWR from 'swr'; // 자동으로 요청을 여러번 보내서 항상 화면을 최신으로 유지시켜준다.
 
 const LogIn = () => {
-  const { data, error, revalidate, mutate } = useSWR('http://localhost:3095/api/users', fetcher, {
+  const { data, error, revalidate, mutate } = useSWR('/api/users', fetcher, {
     dedupingInterval: 100000,
   }); // 로그인 후 서버로부터 로그인 사용자 정보를 가져옴. data가 존재하지 않으면 로딩중.
   const [logInError, setLogInError] = useState(false);
@@ -20,7 +20,7 @@ const LogIn = () => {
       setLogInError(false);
       axios
         .post(
-          'http://localhost:3095/api/users/login',
+          '/api/users/login',
           { email, password },
           {
             withCredentials: true,
