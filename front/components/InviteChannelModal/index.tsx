@@ -22,7 +22,7 @@ const InviteChannelModal: FC<Props> = ({ show, onCloseModal, setShowInviteChanne
   const { data: userData } = useSWR<IUser>('/api/users', fetcher); // 로그인 후 서버로부터 로그인 사용자 정보를 가져옴. data가 존재하지 않으면 로딩중.
 
   const { revalidate: revalidateMembers } = useSWR<IUser[]>(
-    userData ? `/api/workspaces/${workspace}/members` : null,
+    userData && channel ? `/api/workspaces/${workspace}/members` : null,
     fetcher,
   ); // 로그인한 상태이면 해당 워크스페이스의 멤버들을 모두 가져오고 아니면 안 가져온다(null)
 
