@@ -1,4 +1,4 @@
-import React, { VFC, useState, useCallback } from 'react';
+import React, { VFC, useState, useCallback, useEffect } from 'react';
 import loadable from '@loadable/component';
 import { Switch, Route, Redirect, Link, useParams } from 'react-router-dom';
 import useSWR from 'swr';
@@ -32,6 +32,7 @@ import InviteWorkspaceModal from '@components/InviteWorkspaceModal';
 import InviteChannelModal from '@components/InviteChannelModal';
 import DMList from '@components/DMList';
 import ChannelList from '@components/ChannelList';
+import useSocket from '@hooks/useSocket';
 
 const Channel = loadable(() => import('@pages/Channel'));
 const DirectMessage = loadable(() => import('@pages/DirectMessage'));
@@ -54,6 +55,21 @@ const Workspace: VFC = () => {
   const { data: channelData } = useSWR<IChannel[]>(userData ? `/api/workspaces/${workspace}/channels` : null, fetcher); // 로그인한 상태이면 해당 워크스페이스의 채널들을 모두 가져오고 아니면 안 가져온다(null)
 
   const { data: memberData } = useSWR<IUser[]>(userData ? `/api/workspaces/${workspace}/members` : null, fetcher);
+
+  const [socket, disconnect] = useSocket(workspace);
+
+  // 서버에 실시간으로 사용자가 로그인했음을 알린다.
+  useEffect(() => {
+    if (channelData && userData && socket) {
+      socket.emit('login', { id: userData.id, channels: channelData.map((v) => v.id) });
+    }
+  }, [channelData, userData, socket]);
+
+  useEffect(() => {
+    return () => {
+      disconnect();
+    };
+  }, [workspace, disconnect]);
 
   const onClickUserProfile = useCallback((e) => {
     e.stopPropagation();
